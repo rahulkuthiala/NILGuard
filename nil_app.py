@@ -1,6 +1,7 @@
 import streamlit as st
 import anthropic
 from pypdf import PdfReader
+from fpdf import FPDF
 
 # ── PAGE CONFIG ───────────────────────────────────────────────
 st.set_page_config(
@@ -100,6 +101,56 @@ else:
             st.error(f"Could not read PDF: {e}")
 
 analyze_btn = st.button("Analyze Contract", type="primary", use_container_width=True)
+
+# ── PDF REPORT BUILDER ────────────────────────────────────────
+def sanitize_pdf_text(text):
+    return text.encode("latin-1", "replace").decode("latin-1")
+
+def build_report_pdf(summary_text, risks_list, overall_text):
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+
+    pdf.set_font("Helvetica", "B", 18)
+    pdf.cell(0, 12, sanitize_pdf_text("NIL Contract Risk Analysis Report"), new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(4)
+
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.cell(0, 10, "Contract Summary", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 11)
+    pdf.multi_cell(0, 7, sanitize_pdf_text(summary_text.strip()), new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(4)
+
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.cell(0, 10, "Risks Identified", new_x="LMARGIN", new_y="NEXT")
+    for risk in risks_list:
+        parts = risk.split(" - ", 2)
+        pdf.set_font("Helvetica", "", 11)
+        if len(parts) == 3:
+            score_part, name_part, desc_part = parts
+            score_clean = score_part.replace("[", "").replace("]", "")
+            pdf.set_font("Helvetica", "B", 11)
+            pdf.multi_cell(0, 7, sanitize_pdf_text(f"[{score_clean}] {name_part}"), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("Helvetica", "", 11)
+            pdf.multi_cell(0, 7, sanitize_pdf_text(desc_part), new_x="LMARGIN", new_y="NEXT")
+        else:
+            pdf.multi_cell(0, 7, sanitize_pdf_text(risk), new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(2)
+
+    pdf.ln(2)
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.cell(0, 10, "Overall Verdict", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 11)
+    pdf.multi_cell(0, 7, sanitize_pdf_text(overall_text.strip()), new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(8)
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.multi_cell(0, 5, sanitize_pdf_text(
+        "This tool is for informational purposes only and does not constitute legal advice. "
+        "Always consult your athletic compliance office or a licensed attorney before signing any NIL agreement."
+    ), new_x="LMARGIN", new_y="NEXT")
+
+    return bytes(pdf.output())
 
 # ── SYSTEM PROMPT ─────────────────────────────────────────────
 SYSTEM_PROMPT = """
@@ -246,6 +297,16 @@ if analyze_btn:
                     Always consult your athletic compliance office or a licensed attorney before signing any NIL agreement.
                 </div>
                 """, unsafe_allow_html=True)
+
+                # ── DOWNLOAD REPORT ────────────────────────────
+                pdf_bytes = build_report_pdf(summary_text, risks_list, overall_text)
+                st.download_button(
+                    label="⬇️ Download Report (PDF)",
+                    data=pdf_bytes,
+                    file_name="nil_contract_risk_report.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
 
             except anthropic.AuthenticationError:
                 st.error("Invalid API key. Double-check your key at https://console.anthropic.com")
