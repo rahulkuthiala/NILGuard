@@ -1,3 +1,4 @@
 anthropic
 streamlit
 pypdf
+fpdf2
