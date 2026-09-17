@@ -1,5 +1,6 @@
 import streamlit as st
 import anthropic
+from pypdf import PdfReader
 
 # ── PAGE CONFIG ───────────────────────────────────────────────
 st.set_page_config(
@@ -65,14 +66,38 @@ st.markdown("Paste your NIL contract below and get an instant risk assessment ba
 st.divider()
 
 # ── API KEY INPUT ─────────────────────────────────────────────
-api_key = "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"
+api_key = st.secrets["ANTHROPIC_API_KEY"]
 
 # ── CONTRACT INPUT ────────────────────────────────────────────
-contract_text = st.text_area(
-    "Paste Your NIL Contract Here",
-    height=300,
-    placeholder="Paste the full text of your NIL contract here..."
+input_mode = st.radio(
+    "How would you like to provide your contract?",
+    ["Paste Text", "Upload PDF"],
+    horizontal=True
 )
+
+contract_text = ""
+
+if input_mode == "Paste Text":
+    contract_text = st.text_area(
+        "Paste Your NIL Contract Here",
+        height=300,
+        placeholder="Paste the full text of your NIL contract here..."
+    )
+else:
+    uploaded_pdf = st.file_uploader("Upload Your NIL Contract (PDF)", type=["pdf"])
+    if uploaded_pdf is not None:
+        try:
+            reader = PdfReader(uploaded_pdf)
+            extracted_pages = [page.extract_text() or "" for page in reader.pages]
+            contract_text = "\n".join(extracted_pages).strip()
+            if contract_text:
+                st.success(f"Extracted text from {len(reader.pages)} page(s).")
+                with st.expander("Preview extracted text"):
+                    st.text_area("Extracted Contract Text", value=contract_text, height=200, disabled=True)
+            else:
+                st.warning("No selectable text found in this PDF. It may be a scanned image — try pasting the text instead.")
+        except Exception as e:
+            st.error(f"Could not read PDF: {e}")
 
 analyze_btn = st.button("Analyze Contract", type="primary", use_container_width=True)
 
@@ -102,7 +127,7 @@ if analyze_btn:
     if not api_key.strip():
         st.error("Please enter your Anthropic API key.")
     elif not contract_text.strip():
-        st.error("Please paste your contract text before analyzing.")
+        st.error("Please paste your contract text or upload a PDF before analyzing.")
     else:
         with st.spinner("Analyzing your contract..."):
             try:
