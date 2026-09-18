@@ -1,5 +1,8 @@
+from datetime import datetime, timezone
 import streamlit as st
 import anthropic
+import gspread
+from google.oauth2.service_account import Credentials
 from pypdf import PdfReader
 from fpdf import FPDF
 
@@ -102,6 +105,22 @@ else:
 
 analyze_btn = st.button("Analyze Contract", type="primary", use_container_width=True)
 
+# ── ANALYTICS LOGGING ─────────────────────────────────────────
+def log_analytics_event():
+    try:
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+        ]
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"], scopes=scopes
+        )
+        gc = gspread.authorize(creds)
+        sheet = gc.open("NILGuard Analytics").sheet1
+        sheet.append_row([datetime.now(timezone.utc).isoformat()])
+    except Exception:
+        pass
+
 # ── PDF REPORT BUILDER ────────────────────────────────────────
 def sanitize_pdf_text(text):
     return text.encode("latin-1", "replace").decode("latin-1")
@@ -195,6 +214,8 @@ if analyze_btn:
                     ]
                 )
                 response = message.content[0].text
+
+                log_analytics_event()
 
                 # ── PARSE RESPONSE ────────────────────────────
                 summary_text  = ""
