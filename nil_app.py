@@ -193,35 +193,41 @@ if st.session_state.page == "landing":
         """
         <style>
             .stApp {
-                background-color: #0a0f1e;
                 background-image:
-                    repeating-linear-gradient(0deg, rgba(212, 175, 55, 0.05) 0px, rgba(212, 175, 55, 0.05) 1px, transparent 1px, transparent 64px),
-                    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 1px, transparent 1px, transparent 64px);
+                    linear-gradient(rgba(8, 12, 24, 0.72), rgba(8, 12, 24, 0.8)),
+                    url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211');
+                background-size: cover;
+                background-position: center center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }
+            .main .block-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                padding-top: 0;
+                padding-bottom: 0;
+                max-width: 900px;
             }
             .nilguard-title {
-                font-size: 58px;
+                font-size: 64px;
                 font-weight: 800;
                 color: #ffffff;
                 text-align: center;
                 letter-spacing: 0.5px;
-                margin-top: 60px;
-                margin-bottom: 0;
-            }
-            .nilguard-accent-line {
-                width: 140px;
-                height: 3px;
-                margin: 22px auto 32px auto;
-                border-radius: 2px;
-                background: linear-gradient(90deg, transparent, #d4af37, transparent);
-                box-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
+                margin: 0;
+                text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
             }
             .landing-desc {
-                font-size: 17px;
-                line-height: 1.8;
-                color: #b8bfcc;
+                font-size: 18px;
+                line-height: 2;
+                color: #ffffff;
                 text-align: center;
-                max-width: 620px;
-                margin: 0 auto 40px auto;
+                max-width: 640px;
+                margin: 28px auto 40px auto;
+                text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
             }
             div[data-testid="stButton"] > button {
                 background: linear-gradient(135deg, #f5c451, #d4af37);
@@ -230,7 +236,7 @@ if st.session_state.page == "landing":
                 font-size: 16px;
                 border: none;
                 border-radius: 8px;
-                padding: 0.75rem 0;
+                padding: 0.85rem 0;
                 box-shadow: 0 0 18px rgba(245, 196, 81, 0.55), 0 0 40px rgba(212, 175, 55, 0.25);
                 transition: box-shadow 0.2s ease, transform 0.2s ease;
             }
@@ -243,7 +249,6 @@ if st.session_state.page == "landing":
         </style>
 
         <div class="nilguard-title">⚖️ NILGuard</div>
-        <div class="nilguard-accent-line"></div>
         <div class="landing-desc">
         Welcome to NILGuard — an AI-powered contract analysis tool built for college athletes.
         Paste your contract or upload a PDF and get an instant plain-English breakdown of every
