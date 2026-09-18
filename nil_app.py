@@ -72,6 +72,25 @@ st.divider()
 # ── API KEY INPUT ─────────────────────────────────────────────
 api_key = st.secrets["ANTHROPIC_API_KEY"]
 
+# ── STATE SELECTION ───────────────────────────────────────────
+US_STATES = [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+    "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+    "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+    "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+    "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+    "New Hampshire", "New Jersey", "New Mexico", "New York",
+    "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+    "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+    "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+    "West Virginia", "Wisconsin", "Wyoming"
+]
+
+selected_state = st.selectbox(
+    "Select Your State",
+    ["Select your state"] + US_STATES
+)
+
 # ── CONTRACT INPUT ────────────────────────────────────────────
 input_mode = st.radio(
     "How would you like to provide your contract?",
@@ -172,8 +191,29 @@ def build_report_pdf(summary_text, risks_list, overall_text):
     return bytes(pdf.output())
 
 # ── SYSTEM PROMPT ─────────────────────────────────────────────
-SYSTEM_PROMPT = """
+def build_system_prompt(state):
+    if state and state != "Select your state":
+        state_instruction = (
+            f"The athlete is based in {state}. As part of your analysis, evaluate the contract against "
+            f"{state}'s specific NIL laws and regulations, including any state statutes on disclosure "
+            f"requirements, agent/representative registration, prohibited compensation categories "
+            f"(e.g. alcohol, tobacco, gambling, adult entertainment, firearms), contract length limits, "
+            f"or required school/compliance office disclosures. If a clause conflicts with or is restricted "
+            f"by {state}'s NIL law, include it as its own entry in the RISKS list, scored using the same "
+            f"scale below, with the risk name referencing the specific state rule (e.g. '[STATE] Disclosure "
+            f"Requirement Violation'). If {state} has no NIL law provision relevant to a given clause, do not "
+            f"invent one."
+        )
+    else:
+        state_instruction = (
+            "No state was provided, so skip state-specific NIL law analysis entirely and evaluate the "
+            "contract only against general NCAA compliance guidelines."
+        )
+
+    return f"""
 You are an NCAA compliance expert reviewing an NIL contract for a student-athlete.
+
+{state_instruction}
 
 Return your response in exactly this format and nothing else:
 
@@ -181,10 +221,16 @@ SUMMARY:
 Write 3-4 plain English sentences summarizing what this contract is, who it is with, what the athlete is being paid, and what they are being asked to do. Write it like you are explaining it to a college student.
 
 RISKS:
-List every risk you find in the contract. For each one use exactly this format on a single line:
+List every risk you find in the contract, including any state-specific NIL law issues identified above. For each one use exactly this format on a single line:
 [SCORE/10] - RISK NAME - One sentence explaining why this is risky in plain English.
 
-Rate each risk from 1 to 10 where 10 is the most serious eligibility threat and 1 is a very minor concern.
+Rate each risk from 1 to 10 using this scale, and apply it strictly:
+- 1-3: Minor inconvenience with no real impact.
+- 4: Semi-meaningful but not urgent.
+- 5-7: A genuine risk that could realistically cause problems.
+- 8-10: Reserved strictly for a direct NCAA eligibility threat or serious financial harm — pay-for-play, booster involvement, prohibited products, school-tied compensation, large clawbacks, or NDAs that block compliance reporting.
+Nothing may score above 7 unless it is a direct eligibility threat or one of the serious financial harms listed above.
+
 Order the list from highest score to lowest score.
 If a section of the contract is fine, do not include it.
 
@@ -205,7 +251,7 @@ if analyze_btn:
                 message = client.messages.create(
                     model="claude-sonnet-4-6",
                     max_tokens=2048,
-                    system=SYSTEM_PROMPT,
+                    system=build_system_prompt(selected_state),
                     messages=[
                         {
                             "role": "user",
