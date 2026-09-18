@@ -212,7 +212,7 @@ if st.session_state.page == "landing":
                 max-width: 1000px;
             }
             .nilguard-title {
-                font-size: 64px;
+                font-size: 80px;
                 font-weight: 800;
                 color: #ffffff;
                 text-align: center;
@@ -221,7 +221,7 @@ if st.session_state.page == "landing":
                 text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
             }
             .landing-desc {
-                font-size: 18px;
+                font-size: 22px;
                 line-height: 2;
                 color: #ffffff;
                 text-align: center;
@@ -233,10 +233,10 @@ if st.session_state.page == "landing":
                 background: linear-gradient(135deg, #f5c451, #d4af37);
                 color: #0a0f1e;
                 font-weight: 700;
-                font-size: 16px;
+                font-size: 20px;
                 border: none;
                 border-radius: 8px;
-                padding: 0.85rem 0;
+                padding: 1.1rem 0;
                 box-shadow: 0 0 18px rgba(245, 196, 81, 0.55), 0 0 40px rgba(212, 175, 55, 0.25);
                 transition: box-shadow 0.2s ease, transform 0.2s ease;
             }
@@ -299,7 +299,7 @@ if st.session_state.page == "landing":
             div[data-testid="stExpander"] summary p {
                 color: #ffffff;
                 font-weight: 600;
-                font-size: 15px;
+                font-size: 19px;
             }
             .faq-question {
                 font-size: 15px;
@@ -329,7 +329,7 @@ if st.session_state.page == "landing":
         unsafe_allow_html=True
     )
 
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 2.5, 1])
     with col2:
         st.button("Let's Get Started", type="primary", use_container_width=True, on_click=go_to_tool)
 
