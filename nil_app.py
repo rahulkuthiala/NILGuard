@@ -61,68 +61,21 @@ st.markdown("""
             padding-top: 16px;
             border-top: 1px solid #333;
         }
+        .landing-desc {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #e0e0e0;
+            margin-bottom: 28px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# ── HEADER ────────────────────────────────────────────────────
-st.title("⚖️ NIL Contract Risk Analyzer")
-st.markdown("Paste your NIL contract below and get an instant risk assessment based on NCAA compliance guidelines.")
-st.divider()
+# ── SESSION STATE / NAVIGATION ────────────────────────────────
+if "page" not in st.session_state:
+    st.session_state.page = "landing"
 
-# ── API KEY INPUT ─────────────────────────────────────────────
-api_key = st.secrets["ANTHROPIC_API_KEY"]
-
-# ── STATE SELECTION ───────────────────────────────────────────
-US_STATES = [
-    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
-    "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
-    "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
-    "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
-    "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
-    "New Hampshire", "New Jersey", "New Mexico", "New York",
-    "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
-    "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
-    "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
-    "West Virginia", "Wisconsin", "Wyoming"
-]
-
-selected_state = st.selectbox(
-    "Select Your State",
-    ["Select your state"] + US_STATES
-)
-
-# ── CONTRACT INPUT ────────────────────────────────────────────
-input_mode = st.radio(
-    "How would you like to provide your contract?",
-    ["Paste Text", "Upload PDF"],
-    horizontal=True
-)
-
-contract_text = ""
-
-if input_mode == "Paste Text":
-    contract_text = st.text_area(
-        "Paste Your NIL Contract Here",
-        height=300,
-        placeholder="Paste the full text of your NIL contract here..."
-    )
-else:
-    uploaded_pdf = st.file_uploader("Upload Your NIL Contract (PDF)", type=["pdf"])
-    if uploaded_pdf is not None:
-        try:
-            reader = PdfReader(uploaded_pdf)
-            extracted_pages = [page.extract_text() or "" for page in reader.pages]
-            contract_text = "\n".join(extracted_pages).strip()
-            if contract_text:
-                st.success(f"Extracted text from {len(reader.pages)} page(s).")
-                with st.expander("Preview extracted text"):
-                    st.text_area("Extracted Contract Text", value=contract_text, height=200, disabled=True)
-            else:
-                st.warning("No selectable text found in this PDF. It may be a scanned image — try pasting the text instead.")
-        except Exception as e:
-            st.error(f"Could not read PDF: {e}")
-
-analyze_btn = st.button("Analyze Contract", type="primary", use_container_width=True)
+def go_to_tool():
+    st.session_state.page = "tool"
 
 # ── ANALYTICS LOGGING ─────────────────────────────────────────
 def log_analytics_event():
@@ -240,146 +193,224 @@ OVERALL SCORE:
 Overall Risk Score: X/10 - One sentence verdict on whether the athlete should sign, negotiate, or walk away.
 """
 
-# ── ANALYSIS ──────────────────────────────────────────────────
-if analyze_btn:
-    if not api_key.strip():
-        st.error("Please enter your Anthropic API key.")
-    elif not contract_text.strip():
-        st.error("Please paste your contract text or upload a PDF before analyzing.")
+# ── LANDING PAGE ───────────────────────────────────────────────
+if st.session_state.page == "landing":
+    st.title("⚖️ NILGuard")
+    st.markdown(
+        """
+        <div class="landing-desc">
+        Welcome to NILGuard — an AI-powered contract analysis tool built for college athletes.
+        Paste your contract or upload a PDF and get an instant plain-English breakdown of every
+        risky clause, scored by severity and tailored to your state's NIL laws so you know exactly
+        what you're signing before you sign it.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    st.button("Let's Get Started", type="primary", use_container_width=True, on_click=go_to_tool)
+
+# ── MAIN TOOL ────────────────────────────────────────────────
+else:
+    # ── HEADER ────────────────────────────────────────────────
+    st.title("⚖️ NIL Contract Risk Analyzer")
+    st.markdown("Paste your NIL contract below and get an instant risk assessment based on NCAA compliance guidelines.")
+    st.divider()
+
+    # ── API KEY INPUT ─────────────────────────────────────────
+    api_key = st.secrets["ANTHROPIC_API_KEY"]
+
+    # ── STATE SELECTION ───────────────────────────────────────
+    US_STATES = [
+        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+        "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+        "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+        "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+        "New Hampshire", "New Jersey", "New Mexico", "New York",
+        "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+        "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+        "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+        "West Virginia", "Wisconsin", "Wyoming"
+    ]
+
+    selected_state = st.selectbox(
+        "Select Your State",
+        ["Select your state"] + US_STATES
+    )
+
+    # ── CONTRACT INPUT ─────────────────────────────────────────
+    input_mode = st.radio(
+        "How would you like to provide your contract?",
+        ["Paste Text", "Upload PDF"],
+        horizontal=True
+    )
+
+    contract_text = ""
+
+    if input_mode == "Paste Text":
+        contract_text = st.text_area(
+            "Paste Your NIL Contract Here",
+            height=300,
+            placeholder="Paste the full text of your NIL contract here..."
+        )
     else:
-        with st.spinner("Analyzing your contract..."):
+        uploaded_pdf = st.file_uploader("Upload Your NIL Contract (PDF)", type=["pdf"])
+        if uploaded_pdf is not None:
             try:
-                client = anthropic.Anthropic(api_key=api_key)
-                message = client.messages.create(
-                    model="claude-sonnet-4-6",
-                    max_tokens=2048,
-                    system=build_system_prompt(selected_state),
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": f"Analyze this NIL contract:\n\n{contract_text.strip()}"
-                        }
-                    ]
-                )
-                response = message.content[0].text
+                reader = PdfReader(uploaded_pdf)
+                extracted_pages = [page.extract_text() or "" for page in reader.pages]
+                contract_text = "\n".join(extracted_pages).strip()
+                if contract_text:
+                    st.success(f"Extracted text from {len(reader.pages)} page(s).")
+                    with st.expander("Preview extracted text"):
+                        st.text_area("Extracted Contract Text", value=contract_text, height=200, disabled=True)
+                else:
+                    st.warning("No selectable text found in this PDF. It may be a scanned image — try pasting the text instead.")
+            except Exception as e:
+                st.error(f"Could not read PDF: {e}")
 
-                log_analytics_event()
+    analyze_btn = st.button("Analyze Contract", type="primary", use_container_width=True)
 
-                # ── PARSE RESPONSE ────────────────────────────
-                summary_text  = ""
-                risks_list    = []
-                overall_text  = ""
-                current       = ""
+    # ── ANALYSIS ──────────────────────────────────────────────
+    if analyze_btn:
+        if not api_key.strip():
+            st.error("Please enter your Anthropic API key.")
+        elif not contract_text.strip():
+            st.error("Please paste your contract text or upload a PDF before analyzing.")
+        else:
+            with st.spinner("Analyzing your contract..."):
+                try:
+                    client = anthropic.Anthropic(api_key=api_key)
+                    message = client.messages.create(
+                        model="claude-sonnet-4-6",
+                        max_tokens=2048,
+                        system=build_system_prompt(selected_state),
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": f"Analyze this NIL contract:\n\n{contract_text.strip()}"
+                            }
+                        ]
+                    )
+                    response = message.content[0].text
 
-                for line in response.splitlines():
-                    s = line.strip()
-                    if s == "SUMMARY:":
-                        current = "summary"
-                    elif s == "RISKS:":
-                        current = "risks"
-                    elif s == "OVERALL SCORE:":
-                        current = "overall"
-                    elif not s:
-                        continue
-                    elif current == "summary":
-                        summary_text += s + " "
-                    elif current == "risks" and s.startswith("["):
-                        risks_list.append(s)
-                    elif current == "overall":
-                        overall_text += s + " "
+                    log_analytics_event()
 
-                # ── RENDER SUMMARY ────────────────────────────
-                st.subheader("📋 Contract Summary")
-                st.markdown(f'<div class="summary-box">{summary_text.strip()}</div>', unsafe_allow_html=True)
+                    # ── PARSE RESPONSE ──────────────────────────
+                    summary_text  = ""
+                    risks_list    = []
+                    overall_text  = ""
+                    current       = ""
 
-                # ── RENDER RISKS ──────────────────────────────
-                st.subheader("⚠️ Risks Identified")
+                    for line in response.splitlines():
+                        s = line.strip()
+                        if s == "SUMMARY:":
+                            current = "summary"
+                        elif s == "RISKS:":
+                            current = "risks"
+                        elif s == "OVERALL SCORE:":
+                            current = "overall"
+                        elif not s:
+                            continue
+                        elif current == "summary":
+                            summary_text += s + " "
+                        elif current == "risks" and s.startswith("["):
+                            risks_list.append(s)
+                        elif current == "overall":
+                            overall_text += s + " "
 
-                for risk in risks_list:
-                    parts = risk.split(" - ", 2)
-                    if len(parts) == 3:
-                        score_part = parts[0]
-                        name_part  = parts[1]
-                        desc_part  = parts[2]
+                    # ── RENDER SUMMARY ──────────────────────────
+                    st.subheader("📋 Contract Summary")
+                    st.markdown(f'<div class="summary-box">{summary_text.strip()}</div>', unsafe_allow_html=True)
+
+                    # ── RENDER RISKS ─────────────────────────────
+                    st.subheader("⚠️ Risks Identified")
+
+                    for risk in risks_list:
+                        parts = risk.split(" - ", 2)
+                        if len(parts) == 3:
+                            score_part = parts[0]
+                            name_part  = parts[1]
+                            desc_part  = parts[2]
+
+                            try:
+                                score = int(score_part.replace("[", "").replace("]", "").replace("/10", "").strip())
+                            except:
+                                score = 0
+
+                            if score >= 8:
+                                badge_class = "high"
+                                icon = "🔴"
+                            elif score >= 5:
+                                badge_class = "medium"
+                                icon = "🟡"
+                            else:
+                                badge_class = "low"
+                                icon = "🟢"
+
+                            st.markdown(f"""
+                            <div class="risk-card">
+                                <div class="risk-title">
+                                    <span class="score-badge {badge_class}">{score_part.replace("[","").replace("]","")}</span>
+                                    {icon} {name_part}
+                                </div>
+                                <div class="risk-desc">{desc_part}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                    # ── RENDER OVERALL VERDICT ──────────────────
+                    st.subheader("📌 Overall Verdict")
+
+                    overall_parts = overall_text.strip().split(" - ", 1)
+                    if len(overall_parts) == 2:
+                        score_line = overall_parts[0]
+                        verdict    = overall_parts[1]
 
                         try:
-                            score = int(score_part.replace("[", "").replace("]", "").replace("/10", "").strip())
+                            overall_score = int(score_line.replace("Overall Risk Score:", "").replace("/10", "").strip())
                         except:
-                            score = 0
+                            overall_score = 0
 
-                        if score >= 8:
-                            badge_class = "high"
-                            icon = "🔴"
-                        elif score >= 5:
-                            badge_class = "medium"
-                            icon = "🟡"
+                        if overall_score >= 8:
+                            verdict_color = "#ff4444"
+                            verdict_bg    = "#2a1010"
+                        elif overall_score >= 5:
+                            verdict_color = "#ffaa00"
+                            verdict_bg    = "#2a2010"
                         else:
-                            badge_class = "low"
-                            icon = "🟢"
+                            verdict_color = "#22bb55"
+                            verdict_bg    = "#102a18"
 
                         st.markdown(f"""
-                        <div class="risk-card">
-                            <div class="risk-title">
-                                <span class="score-badge {badge_class}">{score_part.replace("[","").replace("]","")}</span>
-                                {icon} {name_part}
-                            </div>
-                            <div class="risk-desc">{desc_part}</div>
+                        <div class="verdict-box" style="background-color:{verdict_bg}; border-left: 4px solid {verdict_color};">
+                            <strong style="color:{verdict_color}; font-size:18px;">{score_line}</strong><br><br>
+                            {verdict}
                         </div>
                         """, unsafe_allow_html=True)
-
-                # ── RENDER OVERALL VERDICT ────────────────────
-                st.subheader("📌 Overall Verdict")
-
-                overall_parts = overall_text.strip().split(" - ", 1)
-                if len(overall_parts) == 2:
-                    score_line = overall_parts[0]
-                    verdict    = overall_parts[1]
-
-                    try:
-                        overall_score = int(score_line.replace("Overall Risk Score:", "").replace("/10", "").strip())
-                    except:
-                        overall_score = 0
-
-                    if overall_score >= 8:
-                        verdict_color = "#ff4444"
-                        verdict_bg    = "#2a1010"
-                    elif overall_score >= 5:
-                        verdict_color = "#ffaa00"
-                        verdict_bg    = "#2a2010"
                     else:
-                        verdict_color = "#22bb55"
-                        verdict_bg    = "#102a18"
+                        st.markdown(f'<div class="verdict-box">{overall_text.strip()}</div>', unsafe_allow_html=True)
 
-                    st.markdown(f"""
-                    <div class="verdict-box" style="background-color:{verdict_bg}; border-left: 4px solid {verdict_color};">
-                        <strong style="color:{verdict_color}; font-size:18px;">{score_line}</strong><br><br>
-                        {verdict}
+                    # ── DISCLAIMER ───────────────────────────────
+                    st.markdown("""
+                    <div class="disclaimer">
+                        ⚠️ This tool is for informational purposes only and does not constitute legal advice.
+                        Always consult your athletic compliance office or a licensed attorney before signing any NIL agreement.
                     </div>
                     """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f'<div class="verdict-box">{overall_text.strip()}</div>', unsafe_allow_html=True)
 
-                # ── DISCLAIMER ────────────────────────────────
-                st.markdown("""
-                <div class="disclaimer">
-                    ⚠️ This tool is for informational purposes only and does not constitute legal advice.
-                    Always consult your athletic compliance office or a licensed attorney before signing any NIL agreement.
-                </div>
-                """, unsafe_allow_html=True)
+                    # ── DOWNLOAD REPORT ─────────────────────────
+                    pdf_bytes = build_report_pdf(summary_text, risks_list, overall_text)
+                    st.download_button(
+                        label="⬇️ Download Report (PDF)",
+                        data=pdf_bytes,
+                        file_name="nil_contract_risk_report.pdf",
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
 
-                # ── DOWNLOAD REPORT ────────────────────────────
-                pdf_bytes = build_report_pdf(summary_text, risks_list, overall_text)
-                st.download_button(
-                    label="⬇️ Download Report (PDF)",
-                    data=pdf_bytes,
-                    file_name="nil_contract_risk_report.pdf",
-                    mime="application/pdf",
-                    use_container_width=True
-                )
-
-            except anthropic.AuthenticationError:
-                st.error("Invalid API key. Double-check your key at https://console.anthropic.com")
-            except anthropic.RateLimitError:
-                st.error("Rate limit hit. Wait a moment and try again.")
-            except Exception as e:
-                st.error(f"Something went wrong: {e}")
+                except anthropic.AuthenticationError:
+                    st.error("Invalid API key. Double-check your key at https://console.anthropic.com")
+                except anthropic.RateLimitError:
+                    st.error("Rate limit hit. Wait a moment and try again.")
+                except Exception as e:
+                    st.error(f"Something went wrong: {e}")
