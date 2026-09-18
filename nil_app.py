@@ -118,8 +118,8 @@ def log_analytics_event():
         gc = gspread.authorize(creds)
         sheet = gc.open("NILGuard Analytics").sheet1
         sheet.append_row([datetime.now(timezone.utc).isoformat()])
-    except Exception as e:
-        st.error(str(e))
+    except Exception:
+        pass
 
 # ── PDF REPORT BUILDER ────────────────────────────────────────
 def sanitize_pdf_text(text):
