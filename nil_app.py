@@ -231,6 +231,8 @@ Rate each risk from 1 to 10 using this scale, and apply it strictly:
 - 8-10: Reserved strictly for a direct NCAA eligibility threat or serious financial harm — pay-for-play, booster involvement, prohibited products, school-tied compensation, large clawbacks, or NDAs that block compliance reporting.
 Nothing may score above 7 unless it is a direct eligibility threat or one of the serious financial harms listed above.
 
+Posting frequency, content approval rights, scheduling obligations, and workload requirements are inconveniences, not eligibility or financial threats, and must never score above 4/10. Only score one of these above 4 if it includes an explicit financial penalty for non-compliance (e.g. a fee, forfeiture, or clawback triggered by missing a post or deadline) — in that case, score it based on the severity of the penalty itself.
+
 Order the list from highest score to lowest score.
 If a section of the contract is fine, do not include it.
 
