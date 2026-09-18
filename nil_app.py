@@ -61,12 +61,6 @@ st.markdown("""
             padding-top: 16px;
             border-top: 1px solid #333;
         }
-        .landing-desc {
-            font-size: 16px;
-            line-height: 1.7;
-            color: #e0e0e0;
-            margin-bottom: 28px;
-        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -195,9 +189,61 @@ Overall Risk Score: X/10 - One sentence verdict on whether the athlete should si
 
 # ── LANDING PAGE ───────────────────────────────────────────────
 if st.session_state.page == "landing":
-    st.title("⚖️ NILGuard")
     st.markdown(
         """
+        <style>
+            .stApp {
+                background-color: #0a0f1e;
+                background-image:
+                    repeating-linear-gradient(0deg, rgba(212, 175, 55, 0.05) 0px, rgba(212, 175, 55, 0.05) 1px, transparent 1px, transparent 64px),
+                    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 1px, transparent 1px, transparent 64px);
+            }
+            .nilguard-title {
+                font-size: 58px;
+                font-weight: 800;
+                color: #ffffff;
+                text-align: center;
+                letter-spacing: 0.5px;
+                margin-top: 60px;
+                margin-bottom: 0;
+            }
+            .nilguard-accent-line {
+                width: 140px;
+                height: 3px;
+                margin: 22px auto 32px auto;
+                border-radius: 2px;
+                background: linear-gradient(90deg, transparent, #d4af37, transparent);
+                box-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
+            }
+            .landing-desc {
+                font-size: 17px;
+                line-height: 1.8;
+                color: #b8bfcc;
+                text-align: center;
+                max-width: 620px;
+                margin: 0 auto 40px auto;
+            }
+            div[data-testid="stButton"] > button {
+                background: linear-gradient(135deg, #f5c451, #d4af37);
+                color: #0a0f1e;
+                font-weight: 700;
+                font-size: 16px;
+                border: none;
+                border-radius: 8px;
+                padding: 0.75rem 0;
+                box-shadow: 0 0 18px rgba(245, 196, 81, 0.55), 0 0 40px rgba(212, 175, 55, 0.25);
+                transition: box-shadow 0.2s ease, transform 0.2s ease;
+            }
+            div[data-testid="stButton"] > button:hover {
+                box-shadow: 0 0 26px rgba(245, 196, 81, 0.8), 0 0 55px rgba(212, 175, 55, 0.4);
+                transform: translateY(-1px);
+                color: #0a0f1e;
+                border: none;
+            }
+        </style>
+
+        <div class="nilguard-title">⚖️ NILGuard</div>
+        <div class="nilguard-accent-line"></div>
         <div class="landing-desc">
         Welcome to NILGuard — an AI-powered contract analysis tool built for college athletes.
         Paste your contract or upload a PDF and get an instant plain-English breakdown of every
@@ -207,7 +253,10 @@ if st.session_state.page == "landing":
         """,
         unsafe_allow_html=True
     )
-    st.button("Let's Get Started", type="primary", use_container_width=True, on_click=go_to_tool)
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.button("Let's Get Started", type="primary", use_container_width=True, on_click=go_to_tool)
 
 # ── MAIN TOOL ────────────────────────────────────────────────
 else:
