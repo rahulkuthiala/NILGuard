@@ -208,8 +208,8 @@ if st.session_state.page == "landing":
                 align-items: center;
                 min-height: 100vh;
                 padding-top: 0;
-                padding-bottom: 0;
-                max-width: 900px;
+                padding-bottom: 80px;
+                max-width: 1000px;
             }
             .nilguard-title {
                 font-size: 64px;
@@ -246,6 +246,73 @@ if st.session_state.page == "landing":
                 color: #0a0f1e;
                 border: none;
             }
+            .section-heading {
+                font-size: 32px;
+                font-weight: 800;
+                color: #ffffff;
+                text-align: center;
+                margin: 70px 0 40px 0;
+                text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+            }
+            .step-card {
+                background: rgba(10, 15, 30, 0.55);
+                border: 1px solid rgba(212, 175, 55, 0.25);
+                border-radius: 12px;
+                padding: 28px 20px;
+                text-align: center;
+                height: 100%;
+            }
+            .step-number {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #f5c451, #d4af37);
+                color: #0a0f1e;
+                font-weight: 800;
+                font-size: 18px;
+                margin-bottom: 16px;
+            }
+            .step-title {
+                font-size: 17px;
+                font-weight: 700;
+                color: #ffffff;
+                margin-bottom: 10px;
+            }
+            .step-desc {
+                font-size: 14px;
+                line-height: 1.6;
+                color: #cbd2de;
+            }
+            .why-it-matters-text {
+                font-size: 18px;
+                line-height: 1.9;
+                color: #ffffff;
+                text-align: center;
+                max-width: 680px;
+                margin: 0 auto;
+                text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+            }
+            div[data-testid="stExpander"] {
+                background: rgba(10, 15, 30, 0.55);
+                border: 1px solid rgba(212, 175, 55, 0.25);
+                border-radius: 10px;
+                margin-bottom: 12px;
+            }
+            div[data-testid="stExpander"] summary,
+            div[data-testid="stExpander"] summary p {
+                color: #ffffff;
+                font-weight: 600;
+                font-size: 15px;
+            }
+            .faq-answer {
+                font-size: 14px;
+                line-height: 1.7;
+                color: #cbd2de;
+                padding: 4px 4px 8px 4px;
+            }
         </style>
 
         <div class="nilguard-title">⚖️ NILGuard</div>
@@ -262,6 +329,78 @@ if st.session_state.page == "landing":
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.button("Let's Get Started", type="primary", use_container_width=True, on_click=go_to_tool)
+
+    # ── HOW IT WORKS ─────────────────────────────────────────
+    st.markdown('<div class="section-heading">How It Works</div>', unsafe_allow_html=True)
+
+    steps = [
+        ("1", "Upload or Paste Your Contract", "Upload a PDF or paste the full text of your NIL contract directly into the tool."),
+        ("2", "Select Your State", "Choose the state where you compete so the analysis is tailored to your state's specific NIL laws."),
+        ("3", "Get Your Risk Report", "Receive an instant plain-English breakdown of every risky clause scored by severity with a downloadable PDF report."),
+    ]
+
+    step_col1, step_col2, step_col3 = st.columns(3)
+    for col, (num, step_title, step_desc) in zip([step_col1, step_col2, step_col3], steps):
+        with col:
+            st.markdown(
+                f"""
+                <div class="step-card">
+                    <div class="step-number">{num}</div>
+                    <div class="step-title">{step_title}</div>
+                    <div class="step-desc">{step_desc}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    # ── WHY IT MATTERS ───────────────────────────────────────
+    st.markdown(
+        """
+        <div class="section-heading">Why It Matters</div>
+        <div class="why-it-matters-text">
+        Most college athletes sign NIL contracts without fully understanding what they are agreeing to.
+        A single clause can put your eligibility, finances, and future at risk.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # ── FAQ ───────────────────────────────────────────────────
+    st.markdown('<div class="section-heading">FAQ</div>', unsafe_allow_html=True)
+
+    faqs = [
+        (
+            "What is NIL?",
+            "NIL stands for Name, Image, and Likeness. It refers to a college athlete's right to profit "
+            "from their own identity through endorsement deals, sponsorships, social media partnerships, "
+            "and appearances."
+        ),
+        (
+            "What can brands legally ask me to do?",
+            "Brands can ask you to post sponsored content, make appearances, and promote their products. "
+            "They cannot tie your compensation to your athletic performance, require you to stay at a "
+            "specific school, or ask you to promote prohibited products like alcohol, gambling, or banned "
+            "supplements."
+        ),
+        (
+            "What should every NIL contract include?",
+            "Every contract should clearly state your compensation, the length of the deal, exactly what "
+            "you are required to do, who owns the content you create, and how either party can exit the "
+            "agreement."
+        ),
+        (
+            "Do I need to report my NIL deals to my school?",
+            "In most states yes. Most state NIL laws require you to disclose your deals to your athletic "
+            "compliance office before or shortly after signing. Failing to disclose can put your "
+            "eligibility at risk."
+        ),
+    ]
+
+    faq_col1, faq_col2, faq_col3 = st.columns([1, 3, 1])
+    with faq_col2:
+        for question, answer in faqs:
+            with st.expander(question):
+                st.markdown(f'<div class="faq-answer">{answer}</div>', unsafe_allow_html=True)
 
 # ── MAIN TOOL ────────────────────────────────────────────────
 else:
