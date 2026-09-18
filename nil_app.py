@@ -246,13 +246,8 @@ if st.session_state.page == "landing":
                 color: #0a0f1e;
                 border: none;
             }
-            .section-heading {
-                font-size: 32px;
-                font-weight: 800;
-                color: #ffffff;
-                text-align: center;
-                margin: 70px 0 40px 0;
-                text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+            .landing-spacer {
+                height: 28px;
             }
             .step-card {
                 background: rgba(10, 15, 30, 0.55);
@@ -299,7 +294,6 @@ if st.session_state.page == "landing":
                 background: rgba(10, 15, 30, 0.55);
                 border: 1px solid rgba(212, 175, 55, 0.25);
                 border-radius: 10px;
-                margin-bottom: 12px;
             }
             div[data-testid="stExpander"] summary,
             div[data-testid="stExpander"] summary p {
@@ -307,11 +301,20 @@ if st.session_state.page == "landing":
                 font-weight: 600;
                 font-size: 15px;
             }
+            .faq-question {
+                font-size: 15px;
+                font-weight: 700;
+                color: #ffffff;
+                margin: 18px 0 6px 0;
+            }
+            .faq-question:first-child {
+                margin-top: 4px;
+            }
             .faq-answer {
                 font-size: 14px;
                 line-height: 1.7;
                 color: #cbd2de;
-                padding: 4px 4px 8px 4px;
+                padding: 0 0 8px 0;
             }
         </style>
 
@@ -329,6 +332,8 @@ if st.session_state.page == "landing":
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.button("Let's Get Started", type="primary", use_container_width=True, on_click=go_to_tool)
+
+    st.markdown('<div class="landing-spacer"></div>', unsafe_allow_html=True)
 
     # ── HOW IT WORKS ─────────────────────────────────────────
     with st.expander("How It Works"):
@@ -352,6 +357,8 @@ if st.session_state.page == "landing":
                     unsafe_allow_html=True
                 )
 
+    st.markdown('<div class="landing-spacer"></div>', unsafe_allow_html=True)
+
     # ── WHY IT MATTERS ───────────────────────────────────────
     with st.expander("Why It Matters"):
         st.markdown(
@@ -364,9 +371,9 @@ if st.session_state.page == "landing":
             unsafe_allow_html=True
         )
 
-    # ── FAQ ───────────────────────────────────────────────────
-    st.markdown('<div class="section-heading">FAQ</div>', unsafe_allow_html=True)
+    st.markdown('<div class="landing-spacer"></div>', unsafe_allow_html=True)
 
+    # ── FAQ ───────────────────────────────────────────────────
     faqs = [
         (
             "What is NIL?",
@@ -395,11 +402,13 @@ if st.session_state.page == "landing":
         ),
     ]
 
-    faq_col1, faq_col2, faq_col3 = st.columns([1, 3, 1])
-    with faq_col2:
+    with st.expander("FAQ"):
         for question, answer in faqs:
-            with st.expander(question):
-                st.markdown(f'<div class="faq-answer">{answer}</div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="faq-question">{question}</div>'
+                f'<div class="faq-answer">{answer}</div>',
+                unsafe_allow_html=True
+            )
 
 # ── MAIN TOOL ────────────────────────────────────────────────
 else:
