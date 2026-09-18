@@ -331,39 +331,38 @@ if st.session_state.page == "landing":
         st.button("Let's Get Started", type="primary", use_container_width=True, on_click=go_to_tool)
 
     # ── HOW IT WORKS ─────────────────────────────────────────
-    st.markdown('<div class="section-heading">How It Works</div>', unsafe_allow_html=True)
+    with st.expander("How It Works"):
+        steps = [
+            ("1", "Upload or Paste Your Contract", "Upload a PDF or paste the full text of your NIL contract directly into the tool."),
+            ("2", "Select Your State", "Choose the state where you compete so the analysis is tailored to your state's specific NIL laws."),
+            ("3", "Get Your Risk Report", "Receive an instant plain-English breakdown of every risky clause scored by severity with a downloadable PDF report."),
+        ]
 
-    steps = [
-        ("1", "Upload or Paste Your Contract", "Upload a PDF or paste the full text of your NIL contract directly into the tool."),
-        ("2", "Select Your State", "Choose the state where you compete so the analysis is tailored to your state's specific NIL laws."),
-        ("3", "Get Your Risk Report", "Receive an instant plain-English breakdown of every risky clause scored by severity with a downloadable PDF report."),
-    ]
-
-    step_col1, step_col2, step_col3 = st.columns(3)
-    for col, (num, step_title, step_desc) in zip([step_col1, step_col2, step_col3], steps):
-        with col:
-            st.markdown(
-                f"""
-                <div class="step-card">
-                    <div class="step-number">{num}</div>
-                    <div class="step-title">{step_title}</div>
-                    <div class="step-desc">{step_desc}</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+        step_col1, step_col2, step_col3 = st.columns(3)
+        for col, (num, step_title, step_desc) in zip([step_col1, step_col2, step_col3], steps):
+            with col:
+                st.markdown(
+                    f"""
+                    <div class="step-card">
+                        <div class="step-number">{num}</div>
+                        <div class="step-title">{step_title}</div>
+                        <div class="step-desc">{step_desc}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
     # ── WHY IT MATTERS ───────────────────────────────────────
-    st.markdown(
-        """
-        <div class="section-heading">Why It Matters</div>
-        <div class="why-it-matters-text">
-        Most college athletes sign NIL contracts without fully understanding what they are agreeing to.
-        A single clause can put your eligibility, finances, and future at risk.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    with st.expander("Why It Matters"):
+        st.markdown(
+            """
+            <div class="why-it-matters-text">
+            Most college athletes sign NIL contracts without fully understanding what they are agreeing to.
+            A single clause can put your eligibility, finances, and future at risk.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     # ── FAQ ───────────────────────────────────────────────────
     st.markdown('<div class="section-heading">FAQ</div>', unsafe_allow_html=True)
